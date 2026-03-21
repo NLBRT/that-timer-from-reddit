@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>that timer from reddit.</title>
+
+  <style>
+    /* Light (300) */
+    @font-face {
+      font-family: 'HelveticaNeueCustom';
+      src: url('fonts/HelveticaNeue-Light.woff2') format('woff2'),
+           url('fonts/HelveticaNeue-Light.woff')  format('woff');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    /* Regular (400) */
+    @font-face {
+      font-family: 'HelveticaNeueCustom';
+      src: url('fonts/HelveticaNeue-Regular.woff2') format('woff2'),
+           url('fonts/HelveticaNeue-Regular.woff')  format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    /* Bold (700) */
+    @font-face {
+      font-family: 'HelveticaNeueCustom';
+      src: url('fonts/HelveticaNeue-Bold.woff2') format('woff2'),
+           url('fonts/HelveticaNeue-Bold.woff')  format('woff');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font: 'HelveticaNeueCustom', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --bg:        #111111;
+      --nav-bg:    #2a2a2a;
+      --lime:      #B6FA49;
+      --lime-icon: #67A404;
+      --white-btn: #EEEEEE;
+      --white-icon:#CCCCCC;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: #fff;
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      height: 52px;
+      background: var(--nav-bg);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+    }
+    .nav-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--lime);
+      letter-spacing: -0.01em;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      height: calc(100vh - 52px - 44px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── TIMER BLOCK ── */
+    .timer-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      animation: blockIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+    }
+
+    @keyframes blockIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* text lines */
+    .leg-label {
+      font-size: 15px;
+      font-weight: 300;
+      color: #7a7a7a;
+      letter-spacing: 0.015em;
+      margin-bottom: 5px;
+      transition: opacity 0.25s ease;
+    }
+    .phase-label {
+      font-size: 40px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.025em;
+      line-height: 1;
+      margin-bottom: 30px;
+      transition: opacity 0.25s ease;
+    }
+    .leg-label.fading,
+    .phase-label.fading {
+      opacity: 0;
+    }
+
+    /* ── BUTTON ── */
+    .btn-wrap {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin-bottom: 30px;
+    }
+
+    .btn-circle {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      /* focus state (default) */
+      background: radial-gradient(circle at 37% 30%, #d4ff7a, #B6FA49 52%, #8ec52d);
+      box-shadow:
+        0 0  55px 16px rgba(182, 250, 73, 0.40),
+        0 0 100px 40px rgba(182, 250, 73, 0.16);
+      transition:
+        background   0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow   0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-circle:active {
+      transform: scale(0.96);
+      transition:
+        transform    0.1s ease,
+        background   0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow   0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* break variant */
+    .btn-circle.is-break {
+      background: radial-gradient(circle at 37% 30%, #ffffff, #EEEEEE 52%, #c4c4c4);
+      box-shadow:
+        0 0  55px 16px rgba(230, 230, 230, 0.45),
+        0 0 100px 40px rgba(200, 200, 200, 0.18);
+    }
+
+    /* ── ICON MORPH ── */
+    .icon-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ico {
+      position: absolute;
+      width: 58px;
+      height: 58px;
+      transition:
+        opacity   0.32s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity, transform;
+    }
+    /* default: play visible */
+    .ico-play  { opacity: 1; transform: scale(1)    translateX(3px); }
+    .ico-pause { opacity: 0; transform: scale(0.70); }
+
+    /* running: pause visible */
+    .btn-circle.is-running .ico-play  { opacity: 0; transform: scale(0.70) translateX(3px); }
+    .btn-circle.is-running .ico-pause { opacity: 1; transform: scale(1);   }
+
+    /* ── TIMER TEXT ── */
+    .timer-time {
+      font-size: 27px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.055em;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 7px;
+    }
+
+    .reset-btn {
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 400;
+      color: #666;
+      background: none;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      padding: 2px 4px;
+      opacity: 0;
+      transform: translateY(3px);
+      transition: opacity 0.3s ease, transform 0.3s ease, color 0.2s ease;
+      pointer-events: none;
+    }
+    .reset-btn.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .reset-btn:hover { color: #aaa; }
+
+    /* ── FOOTER ── */
+    .footer {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 22px;
+      font-size: 12px;
+      color: #444;
+      letter-spacing: 0.01em;
+    }
+    .footer b {
+      font-weight: 700;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <span class="nav-title">that timer from reddit.</span>
+  </nav>
+
+  <main class="main">
+    <div class="timer-block" id="timerBlock">
+
+      <span class="leg-label"   id="legLabel">Leg 1</span>
+      <span class="phase-label" id="phaseLabel">Focus</span>
+
+      <div class="btn-wrap">
+        <button class="btn-circle" id="btnCircle" aria-label="Start timer">
+
+          <div class="icon-wrap">
+            <!-- Play triangle -->
+            <svg class="ico ico-play" id="icoPlay"
+                 viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="17,11 49,29 17,47" fill="#67A404"/>
+            </svg>
+
+            <!-- Pause bars -->
+            <svg class="ico ico-pause" id="icoPause"
+                 viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="13" y="12" width="12" height="34" rx="3.5" fill="#67A404"/>
+              <rect x="33" y="12" width="12" height="34" rx="3.5" fill="#67A404"/>
+            </svg>
+          </div>
+
+        </button>
+      </div>
+
+      <span class="timer-time" id="timerTime">50:00</span>
+      <button class="reset-btn" id="resetBtn">reset</button>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    a silly project by <a href="https://nlbrt.in"><b>&nbsp;NLBRT.</b></a>
+  </footer>
+
+  <script>
+    /* ── DATA ── */
+    const LEGS = [
+      { focus: 50, brk: 10 },
+      { focus: 40, brk: 10 },
+      { focus: 30, brk: 10 },
+      { focus: 20, brk: 10 },
+      { focus: 10, brk: 10 },
+    ];
+
+    /* ── STATE ── */
+    let legIdx    = 0;
+    let phase     = 'focus';   // 'focus' | 'break'
+    let timeLeft  = LEGS[0].focus * 60;
+    let running   = false;
+    let ticker    = null;
+
+    /* ── ELEMENTS ── */
+    const btnCircle  = document.getElementById('btnCircle');
+    const legLabel   = document.getElementById('legLabel');
+    const phaseLabel = document.getElementById('phaseLabel');
+    const timerTime  = document.getElementById('timerTime');
+    const resetBtn   = document.getElementById('resetBtn');
+    const icoPlay    = document.getElementById('icoPlay');
+    const icoPause   = document.getElementById('icoPause');
+
+    /* ── HELPERS ── */
+    function fmt(s) {
+      return String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
+    }
+
+    function setIconColor(color) {
+      icoPlay.querySelector('polygon').setAttribute('fill', color);
+      icoPause.querySelectorAll('rect').forEach(r => r.setAttribute('fill', color));
+    }
+
+    /* animate label text swap */
+    function setLabels(leg, ph) {
+      legLabel.classList.add('fading');
+      phaseLabel.classList.add('fading');
+      setTimeout(() => {
+        legLabel.textContent   = leg;
+        phaseLabel.textContent = ph;
+        legLabel.classList.remove('fading');
+        phaseLabel.classList.remove('fading');
+      }, 260);
+    }
+
+    /* ── RENDER ── */
+    function render() {
+      timerTime.textContent = fmt(timeLeft);
+
+      /* button running/paused */
+      btnCircle.classList.toggle('is-running', running);
+
+      /* reset visibility */
+      resetBtn.classList.toggle('visible', running);
+
+      /* focus vs break colour scheme */
+      const isBreak = phase === 'break';
+      btnCircle.classList.toggle('is-break', isBreak);
+      setIconColor(isBreak ? '#AAAAAA' : '#67A404');
+    }
+
+    /* ── TICK ── */
+    function tick() {
+      if (timeLeft <= 0) {
+        stop();
+        nextPhase();
+        return;
+      }
+      timeLeft--;
+      timerTime.textContent = fmt(timeLeft);
+    }
+
+    function stop() {
+      clearInterval(ticker);
+      ticker = null;
+      running = false;
+    }
+
+    /* ── TRANSITIONS ── */
+    function nextPhase() {
+      if (phase === 'focus') {
+        /* focus → break (auto-start) */
+        phase    = 'break';
+        timeLeft = LEGS[legIdx].brk * 60;
+        setLabels(`Leg ${legIdx + 1}`, 'Break');
+        running = true;
+        render();
+        ticker = setInterval(tick, 1000);
+
+      } else {
+        /* break done → next leg or finish */
+        legIdx++;
+        if (legIdx >= LEGS.length) {
+          allDone();
+          return;
+        }
+        phase    = 'focus';
+        timeLeft = LEGS[legIdx].focus * 60;
+        setLabels(`Leg ${legIdx + 1}`, 'Focus');
+        running = false;
+        render();
+      }
+    }
+
+    function allDone() {
+      phase    = 'focus';
+      timeLeft = 0;
+      setLabels('All done', '🎉');
+      resetBtn.textContent = 'restart';
+      resetBtn.classList.add('visible');
+      render();
+    }
+
+    /* ── CONTROLS ── */
+    btnCircle.addEventListener('click', () => {
+      if (running) {
+        stop();
+      } else {
+        running = true;
+        ticker  = setInterval(tick, 1000);
+      }
+      render();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      stop();
+      legIdx   = 0;
+      phase    = 'focus';
+      timeLeft = LEGS[0].focus * 60;
+      setLabels('Leg 1', 'Focus');
+      resetBtn.textContent = 'reset';
+      render();
+    });
+
+    /* ── INIT ── */
+    render();
+  </script>
+</body>
+</html>
