@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>that timer from reddit.</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <style>
-    /* Light (300) */
     @font-face {
       font-family: 'HelveticaNeueCustom';
       src: url('fonts/HelveticaNeue-Light.woff2') format('woff2'),
@@ -15,7 +15,6 @@
       font-style: normal;
       font-display: swap;
     }
-    /* Regular (400) */
     @font-face {
       font-family: 'HelveticaNeueCustom';
       src: url('fonts/HelveticaNeue-Regular.woff2') format('woff2'),
@@ -24,7 +23,6 @@
       font-style: normal;
       font-display: swap;
     }
-    /* Bold (700) */
     @font-face {
       font-family: 'HelveticaNeueCustom';
       src: url('fonts/HelveticaNeue-Bold.woff2') format('woff2'),
@@ -36,20 +34,13 @@
   </style>
 
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --font: 'HelveticaNeueCustom', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      --bg:        #111111;
-      --nav-bg:    #2a2a2a;
-      --lime:      #B6FA49;
-      --lime-icon: #67A404;
-      --white-btn: #EEEEEE;
-      --white-icon:#CCCCCC;
+      --font:   'HelveticaNeueCustom', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --bg:     #111111;
+      --nav-bg: #2a2a2a;
+      --lime:   #B6FA49;
     }
 
     html, body {
@@ -93,13 +84,12 @@
       opacity: 0;
       animation: blockIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
     }
-
     @keyframes blockIn {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0);    }
     }
 
-    /* text lines */
+    /* ── LABELS ── */
     .leg-label {
       font-size: 15px;
       font-weight: 300;
@@ -118,9 +108,7 @@
       transition: opacity 0.25s ease;
     }
     .leg-label.fading,
-    .phase-label.fading {
-      opacity: 0;
-    }
+    .phase-label.fading { opacity: 0; }
 
     /* ── BUTTON ── */
     .btn-wrap {
@@ -138,25 +126,17 @@
       outline: none;
       cursor: pointer;
       position: relative;
-      /* focus state (default) */
       background: radial-gradient(circle at 37% 30%, #d4ff7a, #B6FA49 52%, #8ec52d);
       box-shadow:
         0 0  55px 16px rgba(182, 250, 73, 0.40),
         0 0 100px 40px rgba(182, 250, 73, 0.16);
       transition:
-        background   0.55s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow   0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        background  0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow  0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        transform   0.10s ease;
     }
+    .btn-circle:active { transform: scale(0.96); }
 
-    .btn-circle:active {
-      transform: scale(0.96);
-      transition:
-        transform    0.1s ease,
-        background   0.55s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow   0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* break variant */
     .btn-circle.is-break {
       background: radial-gradient(circle at 37% 30%, #ffffff, #EEEEEE 52%, #c4c4c4);
       box-shadow:
@@ -164,31 +144,55 @@
         0 0 100px 40px rgba(200, 200, 200, 0.18);
     }
 
-    /* ── ICON MORPH ── */
+    /* ── ICON LAYER ── */
     .icon-wrap {
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      pointer-events: none;
     }
 
-    .ico {
-      position: absolute;
-      width: 58px;
-      height: 58px;
+    /*
+      Single SVG hosts all icon states.
+      - morphGroup: the two paths that morph between play (triangle split
+        into top/bottom halves) ↔ pause (two vertical bars).
+      - restartGroup: the restart chevron — fades in/out independently.
+    */
+    .btn-svg {
+      width: 66px;
+      height: 66px;
+      overflow: visible;
+    }
+
+    /* fill transitions handled via style.fill + CSS transition */
+    #morphA, #morphB {
+      transition: fill 0.50s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #restartPath {
+      transition: fill 0.50s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* restartGroup fades in/out with a subtle scale */
+    #restartGroup {
+      opacity: 0;
+      transform-origin: 51px 55.5px; /* centre of restart viewBox */
+      transform: scale(0.80);
       transition:
-        opacity   0.32s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: opacity, transform;
+        opacity   0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    /* default: play visible */
-    .ico-play  { opacity: 1; transform: scale(1)    translateX(3px); }
-    .ico-pause { opacity: 0; transform: scale(0.70); }
+    #restartGroup.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
 
-    /* running: pause visible */
-    .btn-circle.is-running .ico-play  { opacity: 0; transform: scale(0.70) translateX(3px); }
-    .btn-circle.is-running .ico-pause { opacity: 1; transform: scale(1);   }
+    /* morphGroup fades out when restart comes in */
+    #morphGroup {
+      transition: opacity 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #morphGroup.hidden { opacity: 0; }
 
     /* ── TIMER TEXT ── */
     .timer-time {
@@ -200,6 +204,7 @@
       margin-bottom: 7px;
     }
 
+    /* ── RESET LINK ── */
     .reset-btn {
       font-family: var(--font);
       font-size: 12px;
@@ -222,6 +227,44 @@
     }
     .reset-btn:hover { color: #aaa; }
 
+    /* ── VOLUME BUTTON ── */
+    .main {
+      position: relative; /* anchor for absolute vol btn */
+    }
+
+    .vol-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #555;
+      transition: color 0.2s ease;
+      /* 48px hit area */
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .vol-btn:hover { color: #888; }
+
+    .vol-btn .vol-icon {
+      position: absolute;
+      font-size: 20px;
+      line-height: 1;
+      transition: opacity 0.22s ease;
+      /* pointer-events off so clicks always land on the button */
+      pointer-events: none;
+    }
+    /* unmuted: speaker-only icon visible, xmark icon hidden */
+    .vol-btn .vol-icon-on  { opacity: 1; }
+    .vol-btn .vol-icon-off { opacity: 0; }
+    /* muted: flip */
+    .vol-btn.muted .vol-icon-on  { opacity: 0; }
+    .vol-btn.muted .vol-icon-off { opacity: 1; }
+
     /* ── FOOTER ── */
     .footer {
       height: 44px;
@@ -233,10 +276,7 @@
       color: #444;
       letter-spacing: 0.01em;
     }
-    .footer b {
-      font-weight: 700;
-      color: #555;
-    }
+    .footer b { font-weight: 700; color: #555; }
   </style>
 </head>
 <body>
@@ -246,6 +286,16 @@
   </nav>
 
   <main class="main">
+
+    <!-- Audio — drop files into audio/ folder next to index.html -->
+    <audio id="sndNextphase" src="audio/nextphase.wav" preload="auto"></audio>
+    <audio id="sndFinish"    src="audio/finish.wav"    preload="auto"></audio>
+
+    <!-- Volume toggle — top-right of content area -->
+    <button class="vol-btn" id="volBtn" aria-label="Toggle sound">
+      <i class="fa-solid fa-volume-off  vol-icon vol-icon-on"></i>
+      <i class="fa-solid fa-volume-xmark vol-icon vol-icon-off"></i>
+    </button>
     <div class="timer-block" id="timerBlock">
 
       <span class="leg-label"   id="legLabel">Leg 1</span>
@@ -253,22 +303,40 @@
 
       <div class="btn-wrap">
         <button class="btn-circle" id="btnCircle" aria-label="Start timer">
-
           <div class="icon-wrap">
-            <!-- Play triangle -->
-            <svg class="ico ico-play" id="icoPlay"
-                 viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="17,11 49,29 17,47" fill="#67A404"/>
-            </svg>
 
-            <!-- Pause bars -->
-            <svg class="ico ico-pause" id="icoPause"
-                 viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="13" y="12" width="12" height="34" rx="3.5" fill="#67A404"/>
-              <rect x="33" y="12" width="12" height="34" rx="3.5" fill="#67A404"/>
+            <!--
+              Unified SVG. viewBox is 100×100 — our normalised coordinate space.
+
+              morphGroup — two paths that always cover the full shape together:
+                PLAY  state: path A = top-half triangle, path B = bottom-half triangle
+                              → together they form the complete play triangle
+                PAUSE state: path A = left bar, path B = right bar
+
+              restartGroup — the restart chevron path, scaled+centred into 100×100.
+                             Sits on top; morphGroup fades out beneath it.
+            -->
+            <svg class="btn-svg" viewBox="0 0 100 100"
+                 fill="none" xmlns="http://www.w3.org/2000/svg">
+
+              <g id="morphGroup">
+                <path id="morphA" fill="#67A404"/>
+                <path id="morphB" fill="#67A404"/>
+              </g>
+
+              <!--
+                Restart path from restart.svg (102×111) scaled to fit ~66×72
+                inside the 100×100 space, centred: translate(17,14) scale(0.635)
+              -->
+              <g id="restartGroup">
+                <path id="restartPath"
+                  transform="translate(17,14) scale(0.635)"
+                  d="M58.4738 0C63.3679 0.000270761 67.1149 4.35612 66.3839 9.19531L64.2638 23.2217L37.2804 50.8164C34.6498 53.5068 34.25 57.667 36.3195 60.8096L54.4289 88.3086L52.0509 104.047C51.4597 107.959 48.0974 110.852 44.1408 110.852H38.5832C35.8925 110.851 33.3824 109.498 31.9025 107.251L1.31851 60.8096C-0.750828 57.6669 -0.350333 53.5067 2.28043 50.8164L49.6193 2.40723C51.1244 0.868181 53.1864 -9.40962e-08 55.339 0H58.4738ZM93.4738 0C98.3682 2.13942e-07 102.115 4.35582 101.384 9.19531L94.3986 55.4258L87.0519 104.047C86.4606 107.959 83.0982 110.851 79.1418 110.852H73.5841C70.8933 110.852 68.3824 109.498 66.9025 107.251L54.4289 88.3086L59.3976 55.4258L64.2638 23.2217L84.6193 2.40723C86.1244 0.868089 88.1863 2.41214e-05 90.339 0H93.4738Z"
+                  fill="#67A404"/>
+              </g>
+
             </svg>
           </div>
-
         </button>
       </div>
 
@@ -279,11 +347,123 @@
   </main>
 
   <footer class="footer">
-    a silly project by <a href="https://nlbrt.in"><b>&nbsp;NLBRT.</b></a>
+    a silly project by <b>&nbsp;NLBRT.</b>
   </footer>
 
   <script>
-    /* ── DATA ── */
+    /* ══════════════════════════════════════════════════════
+       MORPH ENGINE
+       ─────────────────────────────────────────────────────
+       Both paths share the same 4-point polygon structure
+       so we can linearly interpolate between any two states.
+
+       Coordinate space: 0 0 100 100
+
+       Play triangle (from play.svg, viewBox 128×128):
+         vertices: tip (91,50), top-left (34,12), bottom-left (34,88)
+         Split horizontally at the midpoint (y=50) into two
+         degenerate quads that together form the full triangle.
+
+       Pause bars (from pause.svg, proportions preserved):
+         Left bar:  x14–x40, y10–y90
+         Right bar: x60–x86, y10–y90
+
+       Morph mapping (A: top-half → left bar, B: bottom-half → right bar):
+         This makes the triangle appear to SPLIT: the tip retracts
+         as the two halves slide apart into vertical bars.
+    ══════════════════════════════════════════════════════ */
+
+    const SHAPES = {
+      //          pt0          pt1          pt2          pt3
+      play:  {
+        a: [[34, 12], [91, 50], [34, 50], [34, 12]],   // top triangle half
+        b: [[34, 50], [91, 50], [34, 88], [34, 50]],   // bottom triangle half
+      },
+      pause: {
+        a: [[14, 10], [40, 10], [40, 90], [14, 90]],   // left bar
+        b: [[60, 10], [86, 10], [86, 90], [60, 90]],   // right bar
+      },
+    };
+
+    const MORPH_DURATION = 420; // ms
+
+    // Current interpolated positions
+    let curA = SHAPES.play.a.map(p => [...p]);
+    let curB = SHAPES.play.b.map(p => [...p]);
+
+    // Animation state
+    let fromA, fromB, toA, toB;
+    let rafId     = null;
+    let animStart = null;
+
+    const morphA       = document.getElementById('morphA');
+    const morphB       = document.getElementById('morphB');
+    const morphGroup   = document.getElementById('morphGroup');
+    const restartGroup = document.getElementById('restartGroup');
+    const restartPath  = document.getElementById('restartPath');
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function easeInOut(t) {
+      // cubic ease-in-out
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function lerpPoints(from, to, t) {
+      return from.map((p, i) => [lerp(p[0], to[i][0], t), lerp(p[1], to[i][1], t)]);
+    }
+
+    function pointsToD(pts) {
+      return `M${pts[0][0]},${pts[0][1]} L${pts[1][0]},${pts[1][1]} L${pts[2][0]},${pts[2][1]} L${pts[3][0]},${pts[3][1]} Z`;
+    }
+
+    function applyPaths() {
+      morphA.setAttribute('d', pointsToD(curA));
+      morphB.setAttribute('d', pointsToD(curB));
+    }
+
+    /* Kick off a morph to a named shape ('play' | 'pause') */
+    function morphTo(shape) {
+      // Snapshot current interpolated position as the new 'from'
+      fromA = curA.map(p => [...p]);
+      fromB = curB.map(p => [...p]);
+      toA   = SHAPES[shape].a;
+      toB   = SHAPES[shape].b;
+      animStart = null;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(animFrame);
+    }
+
+    function animFrame(ts) {
+      if (!animStart) animStart = ts;
+      const raw = Math.min((ts - animStart) / MORPH_DURATION, 1);
+      const t   = easeInOut(raw);
+
+      curA = lerpPoints(fromA, toA, t);
+      curB = lerpPoints(fromB, toB, t);
+      applyPaths();
+
+      if (raw < 1) {
+        rafId = requestAnimationFrame(animFrame);
+      } else {
+        rafId = null;
+      }
+    }
+
+    /* ── FILL COLOUR ── */
+    function applyIconColor() {
+      const color = (phase === 'break' && !done) ? '#AAAAAA' : '#67A404';
+      morphA.style.fill       = color;
+      morphB.style.fill       = color;
+      restartPath.style.fill  = color;
+    }
+
+    /* ── INIT paths ── */
+    applyPaths();
+
+    /* ══════════════════════════════════════════════════════
+       TIMER DATA
+    ══════════════════════════════════════════════════════ */
     const LEGS = [
       { focus: 50, brk: 10 },
       { focus: 40, brk: 10 },
@@ -292,33 +472,44 @@
       { focus: 10, brk: 10 },
     ];
 
-    /* ── STATE ── */
-    let legIdx    = 0;
-    let phase     = 'focus';   // 'focus' | 'break'
-    let timeLeft  = LEGS[0].focus * 60;
-    let running   = false;
-    let ticker    = null;
+    let legIdx   = 0;
+    let phase    = 'focus';
+    let timeLeft = LEGS[0].focus * 60;
+    let running  = false;
+    let done     = false;
+    let ticker   = null;
 
-    /* ── ELEMENTS ── */
     const btnCircle  = document.getElementById('btnCircle');
     const legLabel   = document.getElementById('legLabel');
     const phaseLabel = document.getElementById('phaseLabel');
     const timerTime  = document.getElementById('timerTime');
     const resetBtn   = document.getElementById('resetBtn');
-    const icoPlay    = document.getElementById('icoPlay');
-    const icoPause   = document.getElementById('icoPause');
+
+    /* ── AUDIO ── */
+    const sndNextphase = document.getElementById('sndNextphase');
+    const sndFinish    = document.getElementById('sndFinish');
+    let muted = false;
+
+    function playSound(el) {
+      if (muted) return;
+      el.currentTime = 0;
+      el.play().catch(() => {}); // swallow autoplay policy errors silently
+    }
+
+    const volBtn = document.getElementById('volBtn');
+    volBtn.addEventListener('click', () => {
+      muted = !muted;
+      sndNextphase.muted = muted;
+      sndFinish.muted    = muted;
+      volBtn.classList.toggle('muted', muted);
+    });
 
     /* ── HELPERS ── */
     function fmt(s) {
-      return String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
+      return String(Math.floor(s / 60)).padStart(2, '0')
+           + ':' + String(s % 60).padStart(2, '0');
     }
 
-    function setIconColor(color) {
-      icoPlay.querySelector('polygon').setAttribute('fill', color);
-      icoPause.querySelectorAll('rect').forEach(r => r.setAttribute('fill', color));
-    }
-
-    /* animate label text swap */
     function setLabels(leg, ph) {
       legLabel.classList.add('fading');
       phaseLabel.classList.add('fading');
@@ -334,90 +525,89 @@
     function render() {
       timerTime.textContent = fmt(timeLeft);
 
-      /* button running/paused */
-      btnCircle.classList.toggle('is-running', running);
+      // Button glow colour
+      btnCircle.classList.toggle('is-break', phase === 'break' && !done);
 
-      /* reset visibility */
-      resetBtn.classList.toggle('visible', running);
+      // reset link
+      resetBtn.classList.toggle('visible', running && !done);
 
-      /* focus vs break colour scheme */
-      const isBreak = phase === 'break';
-      btnCircle.classList.toggle('is-break', isBreak);
-      setIconColor(isBreak ? '#AAAAAA' : '#67A404');
+      // Icon state
+      if (done) {
+        // Morph paths fade out, restart fades in
+        morphGroup.classList.add('hidden');
+        restartGroup.classList.add('visible');
+      } else {
+        morphGroup.classList.remove('hidden');
+        restartGroup.classList.remove('visible');
+        // Trigger morph
+        morphTo(running ? 'pause' : 'play');
+      }
+
+      applyIconColor();
     }
 
     /* ── TICK ── */
     function tick() {
-      if (timeLeft <= 0) {
-        stop();
-        nextPhase();
-        return;
-      }
+      if (timeLeft <= 0) { stop(); nextPhase(); return; }
       timeLeft--;
       timerTime.textContent = fmt(timeLeft);
     }
 
     function stop() {
       clearInterval(ticker);
-      ticker = null;
+      ticker  = null;
       running = false;
     }
 
     /* ── TRANSITIONS ── */
     function nextPhase() {
       if (phase === 'focus') {
-        /* focus → break (auto-start) */
         phase    = 'break';
         timeLeft = LEGS[legIdx].brk * 60;
         setLabels(`Leg ${legIdx + 1}`, 'Break');
         running = true;
+        playSound(sndNextphase);
         render();
         ticker = setInterval(tick, 1000);
-
       } else {
-        /* break done → next leg or finish */
         legIdx++;
-        if (legIdx >= LEGS.length) {
-          allDone();
-          return;
-        }
+        if (legIdx >= LEGS.length) { allDone(); return; }
         phase    = 'focus';
         timeLeft = LEGS[legIdx].focus * 60;
         setLabels(`Leg ${legIdx + 1}`, 'Focus');
         running = false;
+        playSound(sndNextphase);
         render();
       }
     }
 
     function allDone() {
-      phase    = 'focus';
+      done     = true;
+      running  = false;
       timeLeft = 0;
-      setLabels('All done', '🎉');
-      resetBtn.textContent = 'restart';
-      resetBtn.classList.add('visible');
+      setLabels('Congratulations!', "You're all set :D");
+      playSound(sndFinish);
       render();
     }
 
     /* ── CONTROLS ── */
     btnCircle.addEventListener('click', () => {
-      if (running) {
-        stop();
-      } else {
-        running = true;
-        ticker  = setInterval(tick, 1000);
-      }
+      if (done) { doReset(); return; }
+      if (running) { stop(); } else { running = true; ticker = setInterval(tick, 1000); }
       render();
     });
 
-    resetBtn.addEventListener('click', () => {
+    resetBtn.addEventListener('click', doReset);
+
+    function doReset() {
       stop();
+      done     = false;
       legIdx   = 0;
       phase    = 'focus';
       timeLeft = LEGS[0].focus * 60;
       setLabels('Leg 1', 'Focus');
-      resetBtn.textContent = 'reset';
       render();
-    });
+    }
 
     /* ── INIT ── */
     render();
